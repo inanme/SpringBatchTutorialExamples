@@ -14,7 +14,19 @@
         <appender-ref ref="appLogAppender"/>
     </logger>
 
-    <logger name="org.springframework.security" level="ERROR" additivity="false">
+    <logger name="org.springframework.batch" level="TRACE" additivity="false">
+        <appender-ref ref="appLogAppender"/>
+    </logger>
+
+    <logger name="org.springframework.retry" level="TRACE" additivity="false">
+        <appender-ref ref="appLogAppender"/>
+    </logger>
+
+    <logger name="org.springframework.batch.core.step.item.SimpleRetryExceptionHandler" level="ERROR" additivity="false">
+        <appender-ref ref="appLogAppender"/>
+    </logger>
+
+    <logger name="org.inanme" level="DEBUG" additivity="false">
         <appender-ref ref="appLogAppender"/>
     </logger>
 

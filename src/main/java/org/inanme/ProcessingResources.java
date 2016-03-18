@@ -37,6 +37,15 @@ public class ProcessingResources {
     }
 
     @Bean
+    public TaskExecutor singleThreadExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setCorePoolSize(1);
+        taskExecutor.setMaxPoolSize(1);
+        taskExecutor.setThreadGroupName("Processing Threads");
+        return taskExecutor;
+    }
+
+    @Bean
     public Runnable waitingTask() {
         return () -> {
             try {
@@ -117,7 +126,8 @@ public class ProcessingResources {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Properties jpaProperties) throws Exception {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Properties jpaProperties)
+        throws Exception {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(true);
         vendorAdapter.setShowSql(true);
