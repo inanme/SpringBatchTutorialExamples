@@ -19,6 +19,11 @@ import java.util.stream.IntStream;
 @Configuration
 public class Job1 extends JobBase {
 
+    @Override
+    public String getJobName() {
+        return "job1";
+    }
+
     final int[] numberList = IntStream.range(0, 9).toArray();
 
     final List<CustomPojo> customPojoList =
@@ -49,7 +54,7 @@ public class Job1 extends JobBase {
     @Bean
     public Job job1() {
         return jobBuilderFactory
-                .get("job1")
+                .get(getJobName())
                 .start(validation())
                 .next(createGroups())
                 .next(report())
@@ -57,14 +62,14 @@ public class Job1 extends JobBase {
     }
 
     public Step validation() {
-        return stepBuilderFactory.get("job1.step2").tasklet((cont, context) -> {
+        return stepBuilderFactory.get(getJobName() + ".step1").tasklet((cont, context) -> {
             System.out.println("this is validation");
             return RepeatStatus.FINISHED;
         }).build();
     }
 
     public Step createGroups() {
-        return stepBuilderFactory.get("job1.step1").<CustomPojo, JobResult>chunk(3)
+        return stepBuilderFactory.get(getJobName() + ".step2").<CustomPojo, JobResult>chunk(3)
                 .reader(reader())
                 .processor(processor())
                 .listener(processListener)
@@ -94,7 +99,7 @@ public class Job1 extends JobBase {
     }
 
     public Step report() {
-        return stepBuilderFactory.get("job1.step2").tasklet((cont, context) -> {
+        return stepBuilderFactory.get(getJobName() + ".step3").tasklet((cont, context) -> {
             System.out.println("This is a reporting step");
             return RepeatStatus.FINISHED;
         }).build();

@@ -10,6 +10,9 @@
         </encoder>
     </appender>
 
+    <logger name="org.h2" level="DEBUG" additivity="false">
+        <appender-ref ref="appLogAppender"/>
+    </logger>
 
     <logger name="org.springframework.security" level="ERROR" additivity="false">
         <appender-ref ref="appLogAppender"/>

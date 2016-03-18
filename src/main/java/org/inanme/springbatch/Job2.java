@@ -11,23 +11,30 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.Iterator;
 import java.util.stream.LongStream;
 
+@Configuration
 public class Job2 extends JobBase {
+
+    @Override
+    public String getJobName() {
+        return "job2";
+    }
 
     @Bean
     public Job job2() {
         return jobBuilderFactory
-                .get("job2")
+                .get(getJobName())
                 .start(prepareList())
                 .next(processList())
                 .build();
     }
 
     Step prepareList() {
-        return stepBuilderFactory.get("job2.step1").tasklet((stepContribution, chunkContext) -> {
+        return stepBuilderFactory.get(getJobName() + ".step1").tasklet((stepContribution, chunkContext) -> {
             JobParameters parameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
             long from = parameters.getLong("from");
             long to = parameters.getLong("to");
@@ -40,8 +47,8 @@ public class Job2 extends JobBase {
 
     Step processList() {
         return stepBuilderFactory
-                .get("job2.step2")
-                .<Long, Long>chunk(3)
+                .get(getJobName() + "step2")
+                .<Long, Long>chunk(12)
                 .reader(listReader())
                 .processor(listProcessor())
                 .writer(listWriter())
@@ -49,7 +56,7 @@ public class Job2 extends JobBase {
                 .build();
     }
 
-    public ItemReader<Long> listReader() {
+    ItemReader<Long> listReader() {
         return new ItemReader<Long>() {
 
             private Iterator<Long> iterator;
@@ -61,7 +68,7 @@ public class Job2 extends JobBase {
             }
 
             @Override
-            public Long read() {
+            public synchronized Long read() {
                 return iterator.hasNext() ? iterator.next() : null;
             }
         };

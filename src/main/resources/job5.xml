@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:batch="http://www.springframework.org/schema/batch"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
+
+    <batch:job-repository id="simpleJobRepository"
+                          transaction-manager="dataSourceTransactionManager"
+                          data-source="dataSource"/>
+
+    <bean id="jobLauncher"
+          class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
+          p:jobRepository-ref="simpleJobRepository"/>
+
+    <bean id="contextLoader" class="org.inanme.springbatch.Job5.ExecutionContextLoader" scope="step"/>
+
+    <batch:job id="job5" job-repository="simpleJobRepository">
+
+        <batch:step id="contextLoader1" next="contextLoader2">
+            <batch:tasklet ref="contextLoader" transaction-manager="dataSourceTransactionManager"/>
+        </batch:step>
+
+        <batch:step id="contextLoader2">
+            <batch:tasklet ref="contextLoader" transaction-manager="dataSourceTransactionManager"/>
+        </batch:step>
+
+    </batch:job>
+
+</beans>
