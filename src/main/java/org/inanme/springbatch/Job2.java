@@ -52,7 +52,7 @@ public class Job2 extends JobBase {
                 .reader(listReader())
                 .processor(listProcessor())
                 .writer(listWriter())
-                .taskExecutor(processingResources.taskExecutor())
+                .taskExecutor(mte)
                 .build();
     }
 

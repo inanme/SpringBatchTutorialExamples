@@ -22,93 +22,95 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class ProcessingResources {
 
     @Bean
-    public TaskExecutor taskExecutor() {
+    public TaskExecutor mte() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(10);
         taskExecutor.setMaxPoolSize(20);
-        taskExecutor.setThreadGroupName("Processing Threads");
+        taskExecutor.setThreadGroupName("Multi Threads");
         return taskExecutor;
     }
 
     @Bean
-    public TaskExecutor singleThreadExecutor() {
+    public TaskExecutor ste() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(1);
         taskExecutor.setMaxPoolSize(1);
-        taskExecutor.setThreadGroupName("Processing Threads");
+        taskExecutor.setThreadGroupName("Single Threads");
         return taskExecutor;
     }
 
-    @Bean
-    public Runnable waitingTask() {
+    public Callable<Long> waitingTask(Long waitFor) {
         return () -> {
             try {
-                TimeUnit.HOURS.sleep(1l);
+                TimeUnit.HOURS.sleep(waitFor);
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
+            return waitFor;
         };
     }
 
-    DataSource simpleDataSource() {
+    private static final String H2_JDBC_FILE_URL = "jdbc:h2:~/h2/spring-batch";
+
+    private static final String H2_JDBC_MEM_URL = "jdbc:h2:mem:spring-batch";
+
+    @Value("classpath:org/springframework/batch/core/schema-h2.sql")
+    private Resource H2_BATCH_SCHEMA_CREATE;
+
+    @Value("classpath:test-data.sql")
+    private Resource H2_TEST_DATA_SCRIPT;
+
+    @Value("classpath:org/springframework/batch/core/schema-drop-h2.sql")
+    private Resource H2_BATCH_SCHEMA_DROP;
+
+    @Bean
+    public DataSource dataSource() {
+        return simpleDataSource();
+    }
+
+    private DataSource simpleDataSource() {
         return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
                                             .addScript("classpath:org/springframework/batch/core/schema-h2.sql")
                                             .build();
     }
 
-    private static final String H2_JDBC_URL_TEMPLATE = "jdbc:h2:~/h2/spring-batch";
-
-    @Value("classpath:org/springframework/batch/core/schema-h2.sql")
-    private Resource H2_SCHEMA_SCRIPT;
-
-    @Value("classpath:test-data.sql")
-    private Resource H2_DATA_SCRIPT;
-
-    @Value("classpath:org/springframework/batch/core/schema-drop-h2.sql")
-    private Resource H2_CLEANER_SCRIPT;
-
-    @Bean
-    public DataSource dataSource() {
-        return createH2DataSource();
+    private DataSource createH2DataSource() {
+        String jdbcUrl = String.format(H2_JDBC_MEM_URL, System.getProperty("user.dir"));
+        JdbcDataSource ds = new JdbcDataSource();
+        ds.setURL(jdbcUrl);
+        ds.setUser("sa");
+        ds.setPassword("");
+        return ds;
     }
 
     @Bean
-    public DataSourceInitializer dataSourceInitializer(DataSource dataSource) {
+    public DataSourceInitializer dataSourceInitializer(DataSource dataSource, DatabasePopulator databasePopulator) {
         DataSourceInitializer initializer = new DataSourceInitializer();
         initializer.setDataSource(dataSource);
-        initializer.setDatabasePopulator(databasePopulator());
+        initializer.setDatabasePopulator(databasePopulator);
         //initializer.setDatabaseCleaner(databaseCleaner());
         return initializer;
     }
 
-
-    private DatabasePopulator databasePopulator() {
+    @Bean
+    public DatabasePopulator databasePopulator() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(H2_CLEANER_SCRIPT);
-        populator.addScript(H2_SCHEMA_SCRIPT);
+        populator.addScript(H2_BATCH_SCHEMA_DROP);
+        populator.addScript(H2_BATCH_SCHEMA_CREATE);
         //populator.addScript(H2_DATA_SCRIPT);
         return populator;
     }
 
     private DatabasePopulator databaseCleaner() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(H2_CLEANER_SCRIPT);
+        populator.addScript(H2_BATCH_SCHEMA_DROP);
         return populator;
-    }
-
-    private DataSource createH2DataSource() {
-        String jdbcUrl = String.format(H2_JDBC_URL_TEMPLATE, System.getProperty("user.dir"));
-        JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL(jdbcUrl);
-        ds.setUser("sa");
-        ds.setPassword("");
-        return ds;
     }
 
     @Bean

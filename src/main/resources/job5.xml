@@ -16,7 +16,8 @@
           p:jobRepository-ref="simpleJobRepository"/>
 
     <bean id="errorCache" class="org.inanme.springbatch.Job5$ErrorCache"/>
-    <bean id="jel" class="org.inanme.springbatch.Job5$JEL" c:cache-ref="errorCache"/>
+    <bean id="myJobExecutionListener" class="org.inanme.springbatch.Job5$MyJobExecutionListener"
+          c:cache-ref="errorCache"/>
     <bean id="contextLoader" class="org.inanme.springbatch.Job5.ExecutionContextLoader" scope="step"/>
     <bean id="job5.reader" class="org.inanme.springbatch.Job5.Reader" scope="step"/>
     <bean id="job5.processor" class="org.inanme.springbatch.Job5.Processor" scope="step" c:cache-ref="errorCache"/>
@@ -25,7 +26,7 @@
     <batch:job id="job5" job-repository="simpleJobRepository">
 
         <batch:listeners>
-            <batch:listener ref="jel"/>
+            <batch:listener ref="myJobExecutionListener"/>
         </batch:listeners>
 
         <batch:step id="contextLoader1" next="contextLoader2">

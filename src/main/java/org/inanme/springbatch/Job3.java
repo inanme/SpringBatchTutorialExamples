@@ -42,7 +42,7 @@ public class Job3 extends JobBase {
                 .partitioner(slaveStep())
                 .partitioner(slaveStep().getName(), partitioner())
                 .gridSize(2)
-                .taskExecutor(processingResources.taskExecutor())
+                .taskExecutor(mte)
                 .build();
     }
 

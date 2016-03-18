@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,6 +27,15 @@ import java.util.stream.IntStream;
 public class Job5 {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Job5.class);
+    
+    public static class ExecutionContextLoader implements Tasklet {
+
+        @Override
+        public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+            LOGGER.debug(getClass().getSimpleName());
+            return RepeatStatus.FINISHED;
+        }
+    }
 
     public static class TryAgainException extends RuntimeException {
         public TryAgainException(int id) {
@@ -99,25 +109,15 @@ public class Job5 {
         }
     }
 
-
-    public static class ExecutionContextLoader implements Tasklet {
-
-        @Override
-        public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
-            LOGGER.debug(getClass().getSimpleName());
-            return RepeatStatus.FINISHED;
-        }
-    }
-
     public static class ErrorCache {
-        public Map<Integer, Integer> map = new HashMap<>();
+        public Map<Integer, Integer> map = new ConcurrentHashMap<>();
     }
 
-    public static class JEL implements JobExecutionListener {
+    public static class MyJobExecutionListener implements JobExecutionListener {
 
         private final ErrorCache cache;
 
-        public JEL(ErrorCache cache) {
+        public MyJobExecutionListener(ErrorCache cache) {
             this.cache = cache;
         }
 

@@ -14,11 +14,11 @@
         <appender-ref ref="appLogAppender"/>
     </logger>
 
-    <logger name="org.springframework.batch" level="TRACE" additivity="false">
+    <logger name="org.springframework.batch" level="ERROR" additivity="false">
         <appender-ref ref="appLogAppender"/>
     </logger>
 
-    <logger name="org.springframework.retry" level="TRACE" additivity="false">
+    <logger name="org.springframework.retry" level="ERROR" additivity="false">
         <appender-ref ref="appLogAppender"/>
     </logger>
 
