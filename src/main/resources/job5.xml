@@ -11,12 +11,15 @@
                           transaction-manager="dataSourceTransactionManager"
                           data-source="dataSource"/>
 
-    <bean id="jobLauncher"
-          class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
+    <bean class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
           p:jobRepository-ref="simpleJobRepository"/>
+    <bean class="org.springframework.batch.core.configuration.support.MapJobRegistry"/>
+    <bean id="jobExplorerFactoryBean" class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean"
+          p:dataSource-ref="dataSource"/>
+    <bean class="org.springframework.batch.core.launch.support.SimpleJobOperator" autowire="byType"/>
 
-    <bean id="errorCache" class="org.inanme.springbatch.Job5$ErrorCache"/>
-    <bean id="myJobExecutionListener" class="org.inanme.springbatch.Job5$MyJobExecutionListener"
+    <bean id="errorCache" class="org.inanme.springbatch.Job5.ErrorCache"/>
+    <bean id="myJobExecutionListener" class="org.inanme.springbatch.Job5.MyJobExecutionListener"
           c:cache-ref="errorCache"/>
     <bean id="contextLoader1" class="org.inanme.springbatch.Job5.ExecutionContextLoader" scope="step">
         <constructor-arg>
@@ -28,8 +31,8 @@
             <bean class="org.inanme.spring.ConstantStringSupplier" c:value="Message 2"/>
         </constructor-arg>
     </bean>
-    <bean id="errorProneStep" class="org.inanme.springbatch.Job5$ErrorProneStep"/>
-    <bean id="constantlyFailingStep" class="org.inanme.springbatch.Job5$ConstantlyFailingStep"/>
+    <bean id="errorProneStep" class="org.inanme.springbatch.Job5.ErrorProneStep"/>
+    <bean id="constantlyFailingStep" class="org.inanme.springbatch.Job5.ConstantlyFailingStep"/>
 
     <bean id="job5.reader" class="org.inanme.springbatch.Job5.Reader" scope="step"/>
     <bean id="job5.processor" class="org.inanme.springbatch.Job5.Processor" scope="step" c:cache-ref="errorCache"/>

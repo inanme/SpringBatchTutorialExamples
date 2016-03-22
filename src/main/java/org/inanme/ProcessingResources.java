@@ -22,8 +22,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class ProcessingResources {
@@ -44,16 +42,6 @@ public class ProcessingResources {
         taskExecutor.setMaxPoolSize(1);
         taskExecutor.setThreadGroupName("Single Threads");
         return taskExecutor;
-    }
-
-    public Callable<Long> waitingTask(Long waitFor) {
-        return () -> {
-            try {
-                TimeUnit.HOURS.sleep(waitFor);
-            } catch (InterruptedException e) {
-            }
-            return waitFor;
-        };
     }
 
     private static final String H2_JDBC_FILE_URL = "jdbc:h2:~/h2/spring-batch";
@@ -81,15 +69,13 @@ public class ProcessingResources {
     }
 
     private DataSource createH2DataSource() {
-        String jdbcUrl = String.format(H2_JDBC_MEM_URL, System.getProperty("user.dir"));
         JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL(jdbcUrl);
+        ds.setURL(H2_JDBC_MEM_URL);
         ds.setUser("sa");
         ds.setPassword("");
         return ds;
     }
 
-    @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource, DatabasePopulator databasePopulator) {
         DataSourceInitializer initializer = new DataSourceInitializer();
         initializer.setDataSource(dataSource);
@@ -98,7 +84,6 @@ public class ProcessingResources {
         return initializer;
     }
 
-    @Bean
     public DatabasePopulator databasePopulator() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(H2_BATCH_SCHEMA_DROP);

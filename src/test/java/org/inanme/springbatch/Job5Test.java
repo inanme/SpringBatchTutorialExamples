@@ -5,7 +5,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.batch.core.*;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRepository;
@@ -44,6 +46,12 @@ public class Job5Test {
     @Autowired
     JobRepository jobRepository;
 
+    @Autowired
+    JobOperator jobOperator;
+
+    @Autowired
+    JobExplorer jobExplorer;
+
     @Test
     public void job5Test()
         throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
@@ -51,7 +59,11 @@ public class Job5Test {
         JobExecution jobExecution = jobLauncher
             .run(job5, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
 
-        assertEquals(BatchStatus.COMPLETED, jobExecution.getStatus());
+        assertEquals(BatchStatus.FAILED, jobExecution.getStatus());
+
+        //  JobExecution execution = jobExplorer.getJobExecution(jobExecution.getJobId());
+
+        System.out.println("exd");
     }
 
     @Test
