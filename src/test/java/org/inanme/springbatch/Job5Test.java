@@ -32,9 +32,11 @@ public class Job5Test {
     @Autowired
     Job job5;
 
-
     @Autowired
     Job job6;
+
+    @Autowired
+    Job job7;
 
     @Autowired
     JobLauncher jobLauncher;
@@ -67,5 +69,39 @@ public class Job5Test {
 
         JobExecution jobExecution3 = jobLauncher.run(job6, jobParameters2);
         assertEquals(BatchStatus.FAILED, jobExecution3.getStatus());
+    }
+
+    @Test(expected = JobInstanceAlreadyCompleteException.class)
+    public void job6JobInstanceAlreadyCompleteException()
+        throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
+               JobInstanceAlreadyCompleteException {
+        JobParameters jobParameters1 = new JobParametersBuilder().addLong("id", 1l).toJobParameters();
+
+        JobExecution jobExecution1 = jobLauncher.run(job6, jobParameters1);
+        assertEquals(BatchStatus.FAILED, jobExecution1.getStatus());
+
+        JobExecution jobExecution2 = jobLauncher.run(job6, jobParameters1);
+        assertEquals(BatchStatus.COMPLETED, jobExecution2.getStatus());
+
+        JobExecution jobExecution3 = jobLauncher.run(job6, jobParameters1);
+    }
+
+    @Test
+    public void job7Test()
+        throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
+               JobInstanceAlreadyCompleteException {
+        JobParameters jobParameters1 = new JobParametersBuilder().addLong("id", 1l).toJobParameters();
+
+        JobExecution jobExecution1 = jobLauncher.run(job7, jobParameters1);
+        assertEquals(BatchStatus.FAILED, jobExecution1.getStatus());
+
+        JobExecution jobExecution2 = jobLauncher.run(job7, jobParameters1);
+        assertEquals(BatchStatus.FAILED, jobExecution2.getStatus());
+
+        JobExecution jobExecution3 = jobLauncher.run(job7, jobParameters1);
+        assertEquals(BatchStatus.FAILED, jobExecution3.getStatus());
+
+        JobExecution jobExecution4 = jobLauncher.run(job7, jobParameters1);
+        assertEquals(BatchStatus.FAILED, jobExecution4.getStatus());
     }
 }

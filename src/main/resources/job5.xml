@@ -29,6 +29,8 @@
         </constructor-arg>
     </bean>
     <bean id="errorProneStep" class="org.inanme.springbatch.Job5$ErrorProneStep"/>
+    <bean id="constantlyFailingStep" class="org.inanme.springbatch.Job5$ConstantlyFailingStep"/>
+
     <bean id="job5.reader" class="org.inanme.springbatch.Job5.Reader" scope="step"/>
     <bean id="job5.processor" class="org.inanme.springbatch.Job5.Processor" scope="step" c:cache-ref="errorCache"/>
     <bean id="job5.writer" class="org.inanme.springbatch.Job5.Writer" scope="step" c:cache-ref="errorCache"/>
@@ -62,13 +64,27 @@
 
     <batch:job id="job6" job-repository="simpleJobRepository">
 
-        <batch:step id="job6.step1" next="job6.step2">
+        <batch:step id="job6.step1" next="job6.step2" allow-start-if-complete="true">
             <batch:tasklet ref="contextLoader1"
                            transaction-manager="dataSourceTransactionManager"/>
         </batch:step>
 
-        <batch:step id="job6.step2">
+        <batch:step id="job6.step2" next="job6.step3">
+            <batch:tasklet ref="contextLoader2"
+                           transaction-manager="dataSourceTransactionManager"/>
+        </batch:step>
+
+        <batch:step id="job6.step3">
             <batch:tasklet ref="errorProneStep"
+                           transaction-manager="dataSourceTransactionManager"/>
+        </batch:step>
+
+    </batch:job>
+
+    <batch:job id="job7" job-repository="simpleJobRepository">
+
+        <batch:step id="job7.step1">
+            <batch:tasklet ref="constantlyFailingStep" start-limit="3"
                            transaction-manager="dataSourceTransactionManager"/>
         </batch:step>
 

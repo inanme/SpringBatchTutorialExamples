@@ -64,6 +64,14 @@ public class Job5 {
         }
     }
 
+    public static class ConstantlyFailingStep implements Tasklet {
+
+        @Override
+        public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+            throw new IllegalStateException("Failing on purpose");
+        }
+    }
+
     public static class TryAgainException extends RuntimeException {
         public TryAgainException(int id) {
             super("Failed for " + id);
