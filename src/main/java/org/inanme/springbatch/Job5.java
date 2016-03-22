@@ -1,6 +1,7 @@
 package org.inanme.springbatch;
 
 import org.inanme.ProcessingResources;
+import org.inanme.spring.ConstantStringSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
@@ -8,6 +9,7 @@ import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -27,12 +29,37 @@ import java.util.stream.IntStream;
 public class Job5 {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Job5.class);
-    
+
     public static class ExecutionContextLoader implements Tasklet {
+
+        private final String message;
+
+        public ExecutionContextLoader(ConstantStringSupplier stringSupplier) {
+            this.message = stringSupplier.get();
+        }
 
         @Override
         public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
-            LOGGER.debug(getClass().getSimpleName());
+            String stepName = chunkContext.getStepContext().getStepName();
+            LOGGER.debug(stepName + " " + message);
+            return RepeatStatus.FINISHED;
+        }
+    }
+
+    public static class ErrorProneStep implements Tasklet {
+
+        private static final String KEY = "failedBefore";
+
+        @Override
+        public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+            String stepName = chunkContext.getStepContext().getStepName();
+            ExecutionContext executionContext =
+                chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
+            Boolean failedBefore = (Boolean) executionContext.get(KEY);
+            if (!Boolean.TRUE.equals(failedBefore)) {
+                executionContext.put(KEY, true);
+                throw new IllegalStateException("Failing on purpose");
+            }
             return RepeatStatus.FINISHED;
         }
     }
