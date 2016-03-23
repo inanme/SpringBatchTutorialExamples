@@ -95,7 +95,7 @@ public class Job5Test {
         JobExecution jobExecution2 = jobLauncher.run(job6, jobParameters1);
         assertEquals(BatchStatus.COMPLETED, jobExecution2.getStatus());
 
-        JobExecution jobExecution3 = jobLauncher.run(job6, jobParameters1);
+        jobLauncher.run(job6, jobParameters1);
     }
 
     @Test

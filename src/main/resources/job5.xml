@@ -7,14 +7,21 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
 
-    <batch:job-repository id="simpleJobRepository"
-                          transaction-manager="dataSourceTransactionManager"
-                          data-source="dataSource"/>
+    <!--<batch:job-repository id="simpleJobRepository"-->
+                          <!--transaction-manager="dataSourceTransactionManager"-->
+                          <!--data-source="dataSource"/>-->
+
+    <bean id="simpleJobRepository"
+          class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean"
+          p:dataSource-ref="dataSource"
+          p:transactionManager-ref="dataSourceTransactionManager"
+          p:validateTransactionState="false"
+          p:databaseType="H2"/>
 
     <bean class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
           p:jobRepository-ref="simpleJobRepository"/>
     <bean class="org.springframework.batch.core.configuration.support.MapJobRegistry"/>
-    <bean id="jobExplorerFactoryBean" class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean"
+    <bean class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean"
           p:dataSource-ref="dataSource"/>
     <bean class="org.springframework.batch.core.launch.support.SimpleJobOperator" autowire="byType"/>
 

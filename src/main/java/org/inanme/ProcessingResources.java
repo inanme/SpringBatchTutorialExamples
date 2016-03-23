@@ -45,9 +45,7 @@ public class ProcessingResources {
     }
 
     private static final String H2_JDBC_FILE_URL = "jdbc:h2:~/h2/spring-batch";
-
-    private static final String H2_JDBC_MEM_URL = "jdbc:h2:mem:spring-batch";
-
+    
     @Value("classpath:org/springframework/batch/core/schema-h2.sql")
     private Resource H2_BATCH_SCHEMA_CREATE;
 
@@ -59,7 +57,7 @@ public class ProcessingResources {
 
     @Bean
     public DataSource dataSource() {
-        return simpleDataSource();
+        return createH2DataSource();
     }
 
     private DataSource simpleDataSource() {
@@ -70,12 +68,13 @@ public class ProcessingResources {
 
     private DataSource createH2DataSource() {
         JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL(H2_JDBC_MEM_URL);
+        ds.setURL(H2_JDBC_FILE_URL);
         ds.setUser("sa");
         ds.setPassword("");
         return ds;
     }
 
+    @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource, DatabasePopulator databasePopulator) {
         DataSourceInitializer initializer = new DataSourceInitializer();
         initializer.setDataSource(dataSource);
@@ -84,6 +83,7 @@ public class ProcessingResources {
         return initializer;
     }
 
+    @Bean
     public DatabasePopulator databasePopulator() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(H2_BATCH_SCHEMA_DROP);
