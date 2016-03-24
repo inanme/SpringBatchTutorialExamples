@@ -18,6 +18,8 @@ import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.*;
 
 @ContextConfiguration(
@@ -55,15 +57,16 @@ public class Job5Test {
     @Test
     public void job5Test()
         throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
-               JobInstanceAlreadyCompleteException {
-        JobExecution jobExecution = jobLauncher
-            .run(job5, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
+               JobInstanceAlreadyCompleteException, InterruptedException {
+        JobExecution jobExecution = jobLauncher.run(job5, new JobParametersBuilder().addLong("from", 10l)
+                                                                                    .addLong("to", 10000l)
+                                                                                    .toJobParameters());
 
-        assertEquals(BatchStatus.FAILED, jobExecution.getStatus());
+        //assertEquals(BatchStatus.FAILED, jobExecution.getStatus());
 
         //  JobExecution execution = jobExplorer.getJobExecution(jobExecution.getJobId());
 
-        System.out.println("exd");
+        TimeUnit.MINUTES.sleep(2l);
     }
 
     @Test

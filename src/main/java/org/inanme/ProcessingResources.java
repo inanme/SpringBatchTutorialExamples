@@ -39,7 +39,6 @@ public class ProcessingResources {
     public TaskExecutor ste() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(1);
-        taskExecutor.setMaxPoolSize(1);
         taskExecutor.setThreadGroupName("Single Threads");
         return taskExecutor;
     }

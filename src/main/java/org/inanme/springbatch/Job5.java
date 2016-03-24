@@ -14,6 +14,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
@@ -78,17 +79,20 @@ public class Job5 {
         }
     }
 
-    public static class Reader implements ItemReader<CustomPojo> {
+    public static class Reader implements ItemReader<CustomPojo>, InitializingBean {
 
-        final int[] numberList = IntStream.range(0, 100).toArray();
+        private Integer from;
 
-        final List<CustomPojo> customPojoList =
-            Arrays.stream(numberList).mapToObj(CustomPojo::new).collect(Collectors.toList());
+        private Integer to;
 
-        final Iterator<CustomPojo> iter1 = customPojoList.iterator();
+        private Iterator<CustomPojo> iter1;
 
-        public Reader() {
-            LOGGER.debug("New Reader");
+        @Override
+        public void afterPropertiesSet() throws Exception {
+            final int[] numberList = IntStream.range(from, to).toArray();
+            final List<CustomPojo> customPojoList =
+                Arrays.stream(numberList).mapToObj(CustomPojo::new).collect(Collectors.toList());
+            iter1 = customPojoList.iterator();
         }
 
         @Override
@@ -102,6 +106,14 @@ public class Job5 {
                 return null;
             }
         }
+
+        public void setFrom(Integer from) {
+            this.from = from;
+        }
+
+        public void setTo(Integer to) {
+            this.to = to;
+        }
     }
 
     public static class Processor implements ItemProcessor<CustomPojo, CustomPojo> {
@@ -114,16 +126,21 @@ public class Job5 {
             this.cache = cache;
         }
 
+        private Boolean fail;
+
         @Override
         public CustomPojo process(CustomPojo item) throws Exception {
-            if (rng.nextInt(5) == 0) {
+            if (Boolean.FALSE.equals(fail) && rng.nextInt(5) == 0) {
                 cache.map.compute(item.id, (k, v) -> (v == null) ? 1 : v + 1);
-                LOGGER
-                    .debug("======================UNLUCKY " + item.id + "===========================================");
+                LOGGER.debug("======================UNLUCKY " + item.id + "========================================");
                 throw new TryAgainException(item.id);
             }
-            LOGGER.debug("======================PROCESSED " + item.id + "===========================================");
+            LOGGER.debug("======================PROCESSED " + item.id + "======================================");
             return item;
+        }
+
+        public void setFail(boolean fail) {
+            this.fail = fail;
         }
     }
 
