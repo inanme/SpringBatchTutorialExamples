@@ -130,7 +130,7 @@ public class Job5 {
 
         @Override
         public CustomPojo process(CustomPojo item) throws Exception {
-            if (Boolean.FALSE.equals(fail) && rng.nextInt(5) == 0) {
+            if (Boolean.TRUE.equals(fail) && rng.nextInt(5) == 0) {
                 cache.map.compute(item.id, (k, v) -> (v == null) ? 1 : v + 1);
                 LOGGER.debug("======================UNLUCKY " + item.id + "========================================");
                 throw new TryAgainException(item.id);

@@ -59,14 +59,14 @@ public class Job5Test {
         throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
                JobInstanceAlreadyCompleteException, InterruptedException {
         JobExecution jobExecution = jobLauncher.run(job5, new JobParametersBuilder().addLong("from", 10l)
-                                                                                    .addLong("to", 10000l)
+                                                                                    .addLong("to", 100l)
                                                                                     .toJobParameters());
 
         //assertEquals(BatchStatus.FAILED, jobExecution.getStatus());
 
         //  JobExecution execution = jobExplorer.getJobExecution(jobExecution.getJobId());
 
-        TimeUnit.MINUTES.sleep(2l);
+        TimeUnit.MINUTES.sleep(1l);
     }
 
     @Test

@@ -14,7 +14,7 @@
         <appender-ref ref="appLogAppender"/>
     </logger>
 
-    <logger name="org.springframework" level="INFO" additivity="false">
+    <logger name="org.springframework.batch" level="TRACE" additivity="false">
         <appender-ref ref="appLogAppender"/>
     </logger>
 
@@ -26,7 +26,7 @@
         <!--<appender-ref ref="appLogAppender"/>-->
     <!--</logger>-->
 
-    <logger name="org.inanme" level="DEBUG" additivity="false">
+    <logger name="org.inanme" level="INFO" additivity="false">
         <appender-ref ref="appLogAppender"/>
     </logger>
 
