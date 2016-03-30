@@ -44,28 +44,27 @@ public class ProcessingResources {
     }
 
     private static final String H2_JDBC_FILE_URL = "jdbc:h2:~/h2/spring-batch";
-    
-    @Value("classpath:org/springframework/batch/core/schema-h2.sql")
-    private Resource H2_BATCH_SCHEMA_CREATE;
 
-    @Value("classpath:test-data.sql")
-    private Resource H2_TEST_DATA_SCRIPT;
+    private static final String H2_BATCH_SCHEMA_CREATE_SQL = "classpath:org/springframework/batch/core/schema-h2.sql";
 
-    @Value("classpath:org/springframework/batch/core/schema-drop-h2.sql")
-    private Resource H2_BATCH_SCHEMA_DROP;
+    private static final String H2_BATCH_SCHEMA_DROP_SQL = "classpath:org/springframework/batch/core/schema-drop-h2.sql";
+
+    @Value(H2_BATCH_SCHEMA_CREATE_SQL)
+    private Resource H2_BATCH_SCHEMA_CREATE_RESOURCE;
+
+    @Value(H2_BATCH_SCHEMA_DROP_SQL)
+    private Resource H2_BATCH_SCHEMA_DROP_RESOURCE;
 
     @Bean
     public DataSource dataSource() {
-        return createH2DataSource();
+        return memoryDatabase();
     }
 
-    private DataSource simpleDataSource() {
-        return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
-                                            .addScript("classpath:org/springframework/batch/core/schema-h2.sql")
-                                            .build();
+    private DataSource memoryDatabase() {
+        return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).addScript(H2_BATCH_SCHEMA_CREATE_SQL).build();
     }
 
-    private DataSource createH2DataSource() {
+    private DataSource fileBasedDatabase() {
         JdbcDataSource ds = new JdbcDataSource();
         ds.setURL(H2_JDBC_FILE_URL);
         ds.setUser("sa");
@@ -85,15 +84,15 @@ public class ProcessingResources {
     @Bean
     public DatabasePopulator databasePopulator() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(H2_BATCH_SCHEMA_DROP);
-        populator.addScript(H2_BATCH_SCHEMA_CREATE);
+        populator.addScript(H2_BATCH_SCHEMA_DROP_RESOURCE);
+        populator.addScript(H2_BATCH_SCHEMA_CREATE_RESOURCE);
         //populator.addScript(H2_DATA_SCRIPT);
         return populator;
     }
 
     private DatabasePopulator databaseCleaner() {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(H2_BATCH_SCHEMA_DROP);
+        populator.addScript(H2_BATCH_SCHEMA_DROP_RESOURCE);
         return populator;
     }
 
