@@ -30,6 +30,8 @@ public class JmsTest {
     @Test
     public void test() throws InterruptedException {
         jmsTemplate.send(queue1, session -> session.createObjectMessage(1));
-        TimeUnit.SECONDS.sleep(1l);
+        jmsTemplate.send(queue1, session -> session.createObjectMessage(2));
+        jmsTemplate.send(queue1, session -> session.createObjectMessage(3));
+        TimeUnit.MINUTES.sleep(20l);
     }
 }

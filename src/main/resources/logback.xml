@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<configuration debug="true">
+<configuration debug="false">
 
     <appender name="appLogAppender" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
@@ -26,7 +26,7 @@
         <!--<appender-ref ref="appLogAppender"/>-->
     <!--</logger>-->
 
-    <logger name="org.inanme" level="INFO" additivity="false">
+    <logger name="org.inanme" level="DEBUG" additivity="false">
         <appender-ref ref="appLogAppender"/>
     </logger>
 

@@ -8,17 +8,13 @@ import org.springframework.batch.core.*;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -34,13 +30,7 @@ public class Job5Test {
     public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     @Autowired
-    Job job5;
-
-    @Autowired
-    Job job6;
-
-    @Autowired
-    Job job7;
+    Job job5, job6, job7;
 
     @Autowired
     JobLauncher jobLauncher;
@@ -55,24 +45,19 @@ public class Job5Test {
     JobExplorer jobExplorer;
 
     @Test
-    public void job5Test()
-        throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
-               JobInstanceAlreadyCompleteException, InterruptedException {
-        JobExecution jobExecution = jobLauncher.run(job5, new JobParametersBuilder().addLong("from", 10l)
-                                                                                    .addLong("to", 100l)
-                                                                                    .toJobParameters());
+    public void job5Test() throws Exception {
+        JobExecution jobExecution = jobLauncher
+            .run(job5, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
 
         //assertEquals(BatchStatus.FAILED, jobExecution.getStatus());
 
         //  JobExecution execution = jobExplorer.getJobExecution(jobExecution.getJobId());
 
-        TimeUnit.MINUTES.sleep(1l);
+        //TimeUnit.MINUTES.sleep(1l);
     }
 
     @Test
-    public void job6TestRestart()
-        throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
-               JobInstanceAlreadyCompleteException {
+    public void job6TestRestart() throws Exception {
         JobParameters jobParameters1 = new JobParametersBuilder().addLong("id", 1l).toJobParameters();
         JobParameters jobParameters2 = new JobParametersBuilder().addLong("id", 2l).toJobParameters();
 
@@ -87,9 +72,7 @@ public class Job5Test {
     }
 
     @Test(expected = JobInstanceAlreadyCompleteException.class)
-    public void job6JobInstanceAlreadyCompleteException()
-        throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
-               JobInstanceAlreadyCompleteException {
+    public void job6JobInstanceAlreadyCompleteException() throws Exception {
         JobParameters jobParameters1 = new JobParametersBuilder().addLong("id", 1l).toJobParameters();
 
         JobExecution jobExecution1 = jobLauncher.run(job6, jobParameters1);
@@ -102,9 +85,7 @@ public class Job5Test {
     }
 
     @Test
-    public void job7Test()
-        throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
-               JobInstanceAlreadyCompleteException {
+    public void job7Test() throws Exception {
         JobParameters jobParameters1 = new JobParametersBuilder().addLong("id", 1l).toJobParameters();
 
         JobExecution jobExecution1 = jobLauncher.run(job7, jobParameters1);

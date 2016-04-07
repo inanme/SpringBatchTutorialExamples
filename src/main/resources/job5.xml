@@ -7,19 +7,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
 
-    <bean id="simpleJobRepository"
-          class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean"
-          p:dataSource-ref="dataSource"
-          p:transactionManager-ref="dataSourceTransactionManager"
-          p:validateTransactionState="false"
-          p:databaseType="H2"/>
-
-    <bean class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
-          p:jobRepository-ref="simpleJobRepository" p:taskExecutor-ref="mte"/>
-    <bean class="org.springframework.batch.core.configuration.support.MapJobRegistry"/>
-    <bean class="org.springframework.batch.core.explore.support.JobExplorerFactoryBean"
-          p:dataSource-ref="dataSource"/>
-    <bean class="org.springframework.batch.core.launch.support.SimpleJobOperator" autowire="byType"/>
+    <import resource="job-core.xml"/>
 
     <bean id="errorCache" class="org.inanme.springbatch.Job5.ErrorCache"/>
     <bean id="myJobExecutionListener" class="org.inanme.springbatch.Job5.MyJobExecutionListener"

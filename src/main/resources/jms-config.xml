@@ -2,21 +2,66 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:c="http://www.springframework.org/schema/c"
-       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-jms="http://www.springframework.org/schema/integration/jms"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd
-       http://www.springframework.org/schema/context
-    http://www.springframework.org/schema/context/spring-context.xsd">
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+       http://www.springframework.org/schema/integration/jms http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd">
+
+    <import resource="bitronix.xml"/>
     <context:annotation-config/>
-    <jms:annotation-driven/>
-    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory" p:brokerURL="vm://localhost"/>
+    <int:annotation-config/>
+    <context:component-scan base-package="org.inanme.jms"/>
+
+    <bean id="jmsConnectionFactory1" class="org.apache.activemq.ActiveMQConnectionFactory"
+          p:brokerURL="vm://localhost"/>
+
+    <bean id="jmsConnectionFactory2" class="bitronix.tm.resource.jms.PoolingConnectionFactory"
+          destroy-method="close"
+          p:className="org.apache.activemq.spring.ActiveMQXAConnectionFactory"
+          p:uniqueName="/tx/xa/jms/tutorial/ConnectionFactory"
+          p:minPoolSize="1"
+          p:maxPoolSize="10"
+          p:user="admin"
+          p:password="admin"
+          p:allowLocalTransactions="true"
+          p:testConnections="true"
+          p:cacheProducersConsumers="true"
+          p:ignoreRecoveryFailures="false"
+          p:maxIdleTime="0"
+          depends-on="jtaTransactionManager">
+        <property name="driverProperties">
+            <util:properties>
+                <prop key="brokerURL">vm://localEmbedded</prop>
+            </util:properties>
+        </property>
+    </bean>
+
+    <bean id="messageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
+          depends-on="jtaTransactionManager"
+          p:autoStartup="true"
+          p:connectionFactory-ref="jmsConnectionFactory2"
+          p:transactionManager-ref="jtaTransactionManager"
+          p:sessionTransacted="false"
+          p:concurrentConsumers="2"
+          p:maxConcurrentConsumers="2"
+          p:destination-ref="queue1"
+          p:receiveTimeout="5000"
+          p:recoveryInterval="1000"
+          p:taskExecutor-ref="jmsTaskExecutor"
+          p:cacheLevelName="CACHE_CONSUMER"
+          p:transactionTimeout="86400"/>
+
+    <int:channel id="inboundMessageChannel"/>
+    <int-jms:message-driven-channel-adapter channel="inboundMessageChannel" container="messageListenerContainer"/>
+
     <bean id="queue1" class="org.apache.activemq.command.ActiveMQQueue" c:name="queue1"/>
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate"
-          p:connectionFactory-ref="jmsConnectionFactory"/>
-    <bean id="exampleListener" class="org.inanme.jms.JmsModule.ExampleListener"/>
-    <bean class="org.springframework.jms.listener.DefaultMessageListenerContainer"
-          p:connectionFactory-ref="jmsConnectionFactory" p:destination-ref="queue1"
-          p:messageListener-ref="exampleListener"/>
+          p:connectionFactory-ref="jmsConnectionFactory2"/>
+
 </beans>

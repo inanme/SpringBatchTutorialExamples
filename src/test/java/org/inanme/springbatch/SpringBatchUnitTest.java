@@ -3,7 +3,10 @@ package org.inanme.springbatch;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -16,25 +19,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(
-        classes = {SpringBatchConfig.class, SpringBatchUnitTest.TestConfig.class},
-        loader = AnnotationConfigContextLoader.class)
+    classes = {SpringBatchConfig.class, SpringBatchUnitTest.TestConfig.class},
+    loader = AnnotationConfigContextLoader.class)
 public class SpringBatchUnitTest {
 
     @Autowired
-    Job job1;
-
-    @Autowired
-    Job job2;
-
-    @Autowired
-    Job job3;
+    Job job1, job2, job3;
 
     @Autowired
     JobLauncher jobLauncher;
@@ -78,7 +73,7 @@ public class SpringBatchUnitTest {
     @Test
     public void testJob2() throws Exception {
         JobExecution jobExecution = jobLauncher
-                .run(job2, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
+            .run(job2, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
 
         assertEquals(BatchStatus.COMPLETED, jobExecution.getStatus());
     }
@@ -86,7 +81,7 @@ public class SpringBatchUnitTest {
     @Test
     public void testJob3() throws Exception {
         JobExecution jobExecution = jobLauncher
-                .run(job3, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
+            .run(job3, new JobParametersBuilder().addLong("from", 10l).addLong("to", 100l).toJobParameters());
 
         assertEquals(BatchStatus.COMPLETED, jobExecution.getStatus());
     }
@@ -95,5 +90,4 @@ public class SpringBatchUnitTest {
     static class TestConfig {
 
     }
-
 }

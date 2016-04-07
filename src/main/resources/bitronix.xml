@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="transactionManagerConfig" class="bitronix.tm.TransactionManagerServices"
+          factory-method="getConfiguration"
+          p:warnAboutZeroResourceTransaction="true"
+          p:debugZeroResourceTransaction="true"
+          p:defaultTransactionTimeout="60"
+          p:journal="null"
+          p:logPart1Filename="btm1.tlog"
+          p:logPart2Filename="btm2.tlog"
+          p:serverId-ref="serverId"
+          p:asynchronous2Pc="true"/>
+
+    <bean id="btmTransactionManager" class="bitronix.tm.TransactionManagerServices"
+          depends-on="transactionManagerConfig"
+          factory-method="getTransactionManager"
+          destroy-method="shutdown"/>
+
+    <bean id="jtaTransactionManager"
+          class="org.springframework.transaction.jta.JtaTransactionManager"
+          p:allowCustomIsolationLevels="true"
+          p:transactionManager-ref="btmTransactionManager"
+          p:userTransaction-ref="btmTransactionManager"/>
+
+</beans>
