@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = SpringDataConfig.class, loader = AnnotationConfigContextLoader.class)
-@Transactional
+@Transactional(transactionManager = "jpaTransactionManager")
 public class SpringDataUnitTest {
 
     @Autowired
