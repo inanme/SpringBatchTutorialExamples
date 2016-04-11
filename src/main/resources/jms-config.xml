@@ -37,10 +37,18 @@
           depends-on="jtaTransactionManager">
         <property name="driverProperties">
             <util:properties>
-                <prop key="brokerURL">vm://localEmbedded</prop>
+                <prop key="brokerURL">tcp://localhost:61616</prop>
+                <!--<prop key="brokerURL">vm://localEmbedded?jms.messagePrioritySupported=true</prop>-->
             </util:properties>
         </property>
     </bean>
+
+    <util:properties id="px">
+        <prop key="concurrentConsumers">1</prop>
+        <prop key="maxConcurrentConsumers">1</prop>
+    </util:properties>
+
+    <context:property-placeholder properties-ref="px"/>
 
     <bean id="messageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
           depends-on="jtaTransactionManager"
@@ -48,8 +56,8 @@
           p:connectionFactory-ref="jmsConnectionFactory2"
           p:transactionManager-ref="jtaTransactionManager"
           p:sessionTransacted="false"
-          p:concurrentConsumers="2"
-          p:maxConcurrentConsumers="2"
+          p:concurrentConsumers="${concurrentConsumers}"
+          p:maxConcurrentConsumers="${maxConcurrentConsumers}"
           p:destination-ref="queue1"
           p:receiveTimeout="5000"
           p:recoveryInterval="1000"
@@ -57,11 +65,22 @@
           p:cacheLevelName="CACHE_CONSUMER"
           p:transactionTimeout="86400"/>
 
+    <bean id="jmsTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"
+          p:corePoolSize="${concurrentConsumers}"
+          p:maxPoolSize="${maxConcurrentConsumers}"
+          p:threadGroupName="jmsTaskExecutor"/>
+
     <int:channel id="inboundMessageChannel"/>
     <int-jms:message-driven-channel-adapter channel="inboundMessageChannel" container="messageListenerContainer"/>
 
     <bean id="queue1" class="org.apache.activemq.command.ActiveMQQueue" c:name="queue1"/>
-    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate"
-          p:connectionFactory-ref="jmsConnectionFactory2"/>
+    <bean id="jmsTemplateWithLowPriority" class="org.springframework.jms.core.JmsTemplate"
+          p:connectionFactory-ref="jmsConnectionFactory2"
+          p:priority="1"
+          p:explicitQosEnabled="true"/>
+    <bean id="jmsTemplateWithHighPriority" class="org.springframework.jms.core.JmsTemplate"
+          p:connectionFactory-ref="jmsConnectionFactory2"
+          p:priority="9"
+          p:explicitQosEnabled="true"/>
 
 </beans>

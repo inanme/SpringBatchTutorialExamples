@@ -3,11 +3,8 @@ package org.inanme.jms;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -22,9 +19,9 @@ public class JmsModule {
         final static Logger LOGGER = LoggerFactory.getLogger(JmsModule.class);
 
         @ServiceActivator(inputChannel = "inboundMessageChannel", outputChannel = "nullChannel")
-        public void onMessage(Integer message) throws InterruptedException {
-            LOGGER.debug(message.toString());
-            TimeUnit.SECONDS.sleep(5l);
+        public void onMessage(String message) throws InterruptedException {
+            LOGGER.debug(message);
+            TimeUnit.MILLISECONDS.sleep(100l);
         }
     }
 
@@ -47,14 +44,5 @@ public class JmsModule {
         public boolean isSingleton() {
             return true;
         }
-    }
-
-    @Bean
-    public TaskExecutor jmsTaskExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setCorePoolSize(2);
-        taskExecutor.setMaxPoolSize(2);
-        taskExecutor.setThreadGroupName("jmsTaskExecutor");
-        return taskExecutor;
     }
 }
