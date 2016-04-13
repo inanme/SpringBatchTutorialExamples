@@ -7,7 +7,7 @@
     <bean id="simpleJobRepository"
           class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean"
           p:dataSource-ref="dataSource"
-          p:transactionManager-ref="dataSourceTransactionManager"
+          p:transactionManager-ref="transactionManager"
           p:validateTransactionState="false"
           p:databaseType="H2"/>
 

@@ -2,6 +2,7 @@ package org.inanme.springbatch;
 
 import org.inanme.ProcessingResources;
 import org.inanme.spring.ConstantStringSupplier;
+import org.inanme.springdata.domain.CustomPojo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
@@ -14,11 +15,17 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.util.Assert;
 
+import javax.persistence.EntityManager;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -27,9 +34,32 @@ import java.util.stream.IntStream;
 @Configuration
 @Import(ProcessingResources.class)
 @ImportResource("/job5.xml")
+@EnableJpaRepositories(transactionManagerRef = "jtaTransactionManager")
+@EnableTransactionManagement
 public class Job5 {
 
     final static Logger LOGGER = LoggerFactory.getLogger(Job5.class);
+
+    @Component("serverId")
+    public static class ServerId implements FactoryBean<String> {
+
+        private String serverId = UUID.randomUUID().toString();
+
+        @Override
+        public String getObject() throws Exception {
+            return serverId;
+        }
+
+        @Override
+        public Class<?> getObjectType() {
+            return String.class;
+        }
+
+        @Override
+        public boolean isSingleton() {
+            return true;
+        }
+    }
 
     public static class ExecutionContextLoader implements Tasklet {
 
@@ -43,6 +73,21 @@ public class Job5 {
         public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
             String stepName = chunkContext.getStepContext().getStepName();
             LOGGER.debug(stepName + " " + message);
+            return RepeatStatus.FINISHED;
+        }
+    }
+
+    public static class PersistEntity implements Tasklet {
+
+        private final CustomPojoRepository customPojoRepository;
+
+        public PersistEntity(CustomPojoRepository customPojoRepository) {
+            this.customPojoRepository = customPojoRepository;
+        }
+
+        @Override
+        public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+            //customPojoRepository.save(new CustomPojo(27));
             return RepeatStatus.FINISHED;
         }
     }
@@ -81,17 +126,27 @@ public class Job5 {
 
     public static class Reader implements ItemReader<CustomPojo>, InitializingBean {
 
-        private Integer from;
+        private final Integer from;
 
-        private Integer to;
+        private final Integer to;
 
         private Iterator<CustomPojo> iter1;
+
+        public Reader(Integer from, Integer to) {
+            this.from = from;
+            this.to = to;
+        }
 
         @Override
         public void afterPropertiesSet() throws Exception {
             final int[] numberList = IntStream.range(from, to).toArray();
-            final List<CustomPojo> customPojoList =
-                Arrays.stream(numberList).mapToObj(CustomPojo::new).collect(Collectors.toList());
+            final List<CustomPojo> customPojoList = Arrays.stream(numberList).mapToObj(i -> {
+                if (i == 27) {
+                    return new CustomPojo(i, "12345");
+                } else {
+                    return new CustomPojo(i);
+                }
+            }).collect(Collectors.toList());
             iter1 = customPojoList.iterator();
         }
 
@@ -106,14 +161,6 @@ public class Job5 {
                 return null;
             }
         }
-
-        public void setFrom(Integer from) {
-            this.from = from;
-        }
-
-        public void setTo(Integer to) {
-            this.to = to;
-        }
     }
 
     public static class Processor implements ItemProcessor<CustomPojo, CustomPojo> {
@@ -122,11 +169,12 @@ public class Job5 {
 
         private final ErrorCache cache;
 
-        public Processor(ErrorCache cache) {
-            this.cache = cache;
-        }
+        private final Boolean fail;
 
-        private Boolean fail;
+        public Processor(ErrorCache cache, Boolean fail) {
+            this.cache = cache;
+            this.fail = fail;
+        }
 
         @Override
         public CustomPojo process(CustomPojo item) throws Exception {
@@ -138,18 +186,21 @@ public class Job5 {
             LOGGER.debug("======================PROCESSED " + item.id + "======================================");
             return item;
         }
-
-        public void setFail(boolean fail) {
-            this.fail = fail;
-        }
     }
 
     public static class Writer implements ItemWriter<CustomPojo> {
 
         private final ErrorCache cache;
 
-        public Writer(ErrorCache cache) {
+        private final CustomPojoRepository customPojoRepository;
+
+        private final EntityManager entityManager;
+
+        public Writer(ErrorCache cache, CustomPojoRepository customPojoRepository, EntityManager entityManager) {
+            Assert.notNull(customPojoRepository);
             this.cache = cache;
+            this.customPojoRepository = customPojoRepository;
+            this.entityManager = entityManager;
         }
 
         @Override
@@ -158,6 +209,7 @@ public class Job5 {
             LOGGER.debug("writer : " + itemsStr);
             LOGGER.debug("======================END OF CHUNK===========================================");
             cache.map.clear();
+            items.stream().forEach(entityManager::persist);
         }
     }
 

@@ -1,5 +1,6 @@
 package org.inanme.springbatch;
 
+import org.inanme.springdata.domain.CustomPojo;
 import org.springframework.batch.core.ItemProcessListener;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

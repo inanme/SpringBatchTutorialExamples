@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:batch="http://www.springframework.org/schema/batch"
-       xmlns:p="http://www.springframework.org/schema/p"
        xmlns:c="http://www.springframework.org/schema/c"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
 
+    <import resource="bitronix.xml"/>
     <import resource="job-core.xml"/>
 
     <bean id="errorCache" class="org.inanme.springbatch.Job5.ErrorCache"/>
@@ -22,15 +22,21 @@
             <bean class="org.inanme.spring.ConstantStringSupplier" c:value="Message 2"/>
         </constructor-arg>
     </bean>
+    <bean id="persistEntity" class="org.inanme.springbatch.Job5$PersistEntity"
+          c:customPojoRepository-ref="customPojoRepository"/>
     <bean id="errorProneStep" class="org.inanme.springbatch.Job5.ErrorProneStep"/>
     <bean id="constantlyFailingStep" class="org.inanme.springbatch.Job5.ConstantlyFailingStep"/>
 
     <bean id="job5.reader" class="org.inanme.springbatch.Job5.Reader" scope="step"
-          p:from="#{jobParameters['from']}"
-          p:to="#{jobParameters['to']}"/>
-    <bean id="job5.processor" class="org.inanme.springbatch.Job5.Processor" scope="step" c:cache-ref="errorCache"
-          p:fail="#{jobParameters['fail']?:false}"/>
-    <bean id="job5.writer" class="org.inanme.springbatch.Job5.Writer" scope="step" c:cache-ref="errorCache"/>
+          c:from="#{jobParameters['from']}"
+          c:to="#{jobParameters['to']}"/>
+    <bean id="job5.processor" class="org.inanme.springbatch.Job5.Processor" scope="step"
+          c:cache-ref="errorCache"
+          c:fail="#{jobParameters['fail']?:false}"/>
+    <bean id="job5.writer" class="org.inanme.springbatch.Job5.Writer" scope="step"
+          c:cache-ref="errorCache"
+          c:customPojoRepository-ref="customPojoRepository"
+          c:entityManager-ref="entityManager"/>
 
     <batch:job id="job5" job-repository="simpleJobRepository">
 
@@ -39,12 +45,12 @@
         </batch:listeners>
 
         <batch:step id="job5.contextLoader1" next="job5.contextLoader2">
-            <batch:tasklet ref="contextLoader1"
-                           transaction-manager="dataSourceTransactionManager"/>
+            <batch:tasklet ref="persistEntity"
+                           transaction-manager="transactionManager"/>
         </batch:step>
 
         <batch:step id="job5.contextLoader2">
-            <batch:tasklet transaction-manager="dataSourceTransactionManager">
+            <batch:tasklet transaction-manager="transactionManager">
                 <batch:chunk reader="job5.reader"
                              processor="job5.processor"
                              writer="job5.writer"
@@ -63,17 +69,17 @@
 
         <batch:step id="job6.step1" next="job6.step2" allow-start-if-complete="true">
             <batch:tasklet ref="contextLoader1"
-                           transaction-manager="dataSourceTransactionManager"/>
+                           transaction-manager="transactionManager"/>
         </batch:step>
 
         <batch:step id="job6.step2" next="job6.step3">
             <batch:tasklet ref="contextLoader2"
-                           transaction-manager="dataSourceTransactionManager"/>
+                           transaction-manager="transactionManager"/>
         </batch:step>
 
         <batch:step id="job6.step3">
             <batch:tasklet ref="errorProneStep"
-                           transaction-manager="dataSourceTransactionManager"/>
+                           transaction-manager="transactionManager"/>
         </batch:step>
 
     </batch:job>
@@ -82,7 +88,7 @@
 
         <batch:step id="job7.step1">
             <batch:tasklet ref="constantlyFailingStep" start-limit="3"
-                           transaction-manager="dataSourceTransactionManager"/>
+                           transaction-manager="transactionManager"/>
         </batch:step>
 
     </batch:job>

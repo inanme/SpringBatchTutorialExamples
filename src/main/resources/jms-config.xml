@@ -62,7 +62,7 @@
           p:receiveTimeout="5000"
           p:recoveryInterval="1000"
           p:taskExecutor-ref="jmsTaskExecutor"
-          p:cacheLevelName="CACHE_CONSUMER"
+          p:cacheLevelName="CACHE_CONNECTION"
           p:transactionTimeout="86400"/>
 
     <bean id="jmsTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"

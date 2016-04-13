@@ -1,24 +1,19 @@
 package org.inanme;
 
-import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.DatabasePopulator;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
-import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -43,34 +38,16 @@ public class ProcessingResources {
         return taskExecutor;
     }
 
-    private static final String H2_JDBC_FILE_URL = "jdbc:h2:~/h2/spring-batch";
 
-    private static final String H2_BATCH_SCHEMA_CREATE_SQL = "classpath:org/springframework/batch/core/schema-h2.sql";
+    public static final String H2_BATCH_SCHEMA_CREATE_SQL = "classpath:org/springframework/batch/core/schema-h2.sql";
 
-    private static final String H2_BATCH_SCHEMA_DROP_SQL = "classpath:org/springframework/batch/core/schema-drop-h2.sql";
+    public static final String H2_BATCH_SCHEMA_DROP_SQL = "classpath:org/springframework/batch/core/schema-drop-h2.sql";
 
     @Value(H2_BATCH_SCHEMA_CREATE_SQL)
-    private Resource H2_BATCH_SCHEMA_CREATE_RESOURCE;
+    public Resource H2_BATCH_SCHEMA_CREATE_RESOURCE;
 
     @Value(H2_BATCH_SCHEMA_DROP_SQL)
-    private Resource H2_BATCH_SCHEMA_DROP_RESOURCE;
-
-    @Bean
-    public DataSource dataSource() {
-        return memoryDatabase();
-    }
-
-    private DataSource memoryDatabase() {
-        return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).addScript(H2_BATCH_SCHEMA_CREATE_SQL).build();
-    }
-
-    private DataSource fileBasedDatabase() {
-        JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL(H2_JDBC_FILE_URL);
-        ds.setUser("sa");
-        ds.setPassword("");
-        return ds;
-    }
+    public Resource H2_BATCH_SCHEMA_DROP_RESOURCE;
 
     @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource, DatabasePopulator databasePopulator) {
@@ -97,34 +74,29 @@ public class ProcessingResources {
     }
 
     @Bean
-    public PlatformTransactionManager dataSourceTransactionManager(DataSource dataSource) {
-        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
-        transactionManager.setDataSource(dataSource);
-        return transactionManager;
+    public SharedEntityManagerBean entityManager(EntityManagerFactory managerFactory) {
+        SharedEntityManagerBean sharedEntityManagerBean = new SharedEntityManagerBean();
+        sharedEntityManagerBean.setEntityManagerFactory(managerFactory);
+        return sharedEntityManagerBean;
     }
 
     @Bean
-    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory);
-        return transactionManager;
-    }
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource,
+                                                                       Properties jpaProperties) {
 
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Properties jpaProperties)
-        throws Exception {
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        //factory.setDataSource(dataSource);
+        factory.setJtaDataSource(dataSource);
+        factory.setPersistenceUnitName("sample");
+        factory.setPackagesToScan("org.inanme.springdata.domain");
+
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(true);
         vendorAdapter.setShowSql(true);
-
-        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        factory.setPersistenceUnitName("sample");
         factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setPackagesToScan("org.inanme.springdata.domain");
-        factory.setDataSource(dataSource);
 
         factory.setJpaProperties(jpaProperties);
-        factory.setLoadTimeWeaver(new InstrumentationLoadTimeWeaver());
+        //factory.setLoadTimeWeaver(new InstrumentationLoadTimeWeaver());
 
         return factory;
     }
@@ -132,11 +104,35 @@ public class ProcessingResources {
     @Bean
     Properties jpaProperties() {
         Properties props = new Properties();
-        props.put("hibernate.query.substitutions", "true 'Y', false 'N'");
-        props.put("hibernate.hbm2ddl.auto", "create-drop");
-        props.put("hibernate.show_sql", "false");
-        props.put("hibernate.format_sql", "true");
+//        props.put("hibernate.query.substitutions", "true 'Y', false 'N'");
+//        props.put("hibernate.hbm2ddl.auto", "create-drop");
+//        props.put("hibernate.show_sql", "false");
+//        props.put("hibernate.format_sql", "true");
+//        props.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+
+        props.put("hibernate.autoReconnect", true);
         props.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+        props.put("hibernate.format_sql", "true");
+        props.put("hibernate.generate_statistics", false);
+        props.put("hibernate.hbm2ddl.auto", "create");
+        props.put("hibernate.jdbc.use_scrollable_resultset", true);
+        props.put("hibernate.query.substitutions", true);
+        props.put("hibernate.show_sql", true);
+        props.put("hibernate.use_sql_comments", true);
+        props.put("hibernate.default_schema", "PUBLIC");
+
+        props.put("hibernate.connection.characterEncoding", "UTF-8");
+        props.put("hibernate.connection.charSet", "UTF-8");
+        props.put("hibernate.connection.useUnicode", true);
+        props.put("hibernate.connection.defaultNChar", true);
+
+        props.put("hibernate.implicit_naming_strategy",
+                  "org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl");
+        props.put("javax.persistence.validation.mode", "none");
+        props.put("org.hibernate.envers.audit_table_suffix", "_rev");
+        props.put("hibernate.transaction.jta.platform",
+                  "org.hibernate.service.jta.platform.internal.BitronixJtaPlatform");
+
         return props;
     }
 }

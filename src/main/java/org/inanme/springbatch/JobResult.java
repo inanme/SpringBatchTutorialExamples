@@ -1,5 +1,7 @@
 package org.inanme.springbatch;
 
+import org.inanme.springdata.domain.CustomPojo;
+
 public class JobResult {
 
     final public CustomPojo pojo;

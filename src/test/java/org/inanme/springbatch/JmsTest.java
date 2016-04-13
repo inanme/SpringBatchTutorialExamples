@@ -50,7 +50,7 @@ public class JmsTest {
         IntStream.range(0, 20).forEach(i -> low.submit(() -> jmsTemplateWithLowPriority
             .send(queue1, session -> session.createObjectMessage(String.format("%3d %s %s", i, "Low ", now)))));
 
-        //TimeUnit.MILLISECONDS.sleep(1000l);
+        TimeUnit.MILLISECONDS.sleep(1000l);
 
         IntStream.range(0, 20).forEach(i -> high.submit(() -> jmsTemplateWithHighPriority
             .send(queue1, session -> session.createObjectMessage(String.format("%3d %s %s", i, "High", now)))));

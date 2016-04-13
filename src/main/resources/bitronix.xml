@@ -2,7 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:p="http://www.springframework.org/schema/p"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <bean id="transactionManagerConfig" class="bitronix.tm.TransactionManagerServices"
           factory-method="getConfiguration"
@@ -25,5 +28,30 @@
           p:allowCustomIsolationLevels="true"
           p:transactionManager-ref="btmTransactionManager"
           p:userTransaction-ref="btmTransactionManager"/>
+
+    <util:properties id="btmDataSourceProps">
+        <!--<prop key="URL">jdbc:h2:mem:fsp</prop>-->
+        <prop key="URL">jdbc:h2:~/h2/spring-batch-xa</prop>
+        <prop key="user">developer</prop>
+        <prop key="password">developer</prop>
+    </util:properties>
+
+    <!-- JTA DataSource-->
+    <bean id="btmDataSource" class="bitronix.tm.resource.jdbc.PoolingDataSource"
+          depends-on="btmTransactionManager"
+          init-method="init"
+          destroy-method="close"
+          p:className="org.h2.jdbcx.JdbcDataSource"
+          p:uniqueName="tx/core/datasource"
+          p:maxPoolSize="5"
+          p:minPoolSize="5"
+          p:shareTransactionConnections="true"
+          p:preparedStatementCacheSize="25"
+          p:allowLocalTransactions="true"
+          p:enableJdbc4ConnectionTest="true"
+          p:driverProperties-ref="btmDataSourceProps"/>
+
+    <alias name="btmDataSource" alias="dataSource"/>
+    <alias name="jtaTransactionManager" alias="transactionManager"/>
 
 </beans>
