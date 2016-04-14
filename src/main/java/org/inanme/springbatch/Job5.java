@@ -209,7 +209,8 @@ public class Job5 {
             LOGGER.debug("writer : " + itemsStr);
             LOGGER.debug("======================END OF CHUNK===========================================");
             cache.map.clear();
-            items.stream().forEach(entityManager::persist);
+            //items.stream().forEach(entityManager::persist);
+            customPojoRepository.save(items);
         }
     }
 
