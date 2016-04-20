@@ -31,7 +31,7 @@
     <bean id="persistEntity" class="org.inanme.springbatch.Job5$PersistEntity"
           c:customPojoRepository-ref="customPojoRepository"/>
     <bean id="errorProneStep" class="org.inanme.springbatch.Job5.ErrorProneStep"/>
-    <bean id="errorProneProcessor" class="org.inanme.springbatch.Job5.ErrorProneProcessor" scope="step"/>
+    <bean id="errorProneProcessor" class="org.inanme.springbatch.Job8Support.ErrorProneProcessor" scope="step"/>
     <bean id="constantlyFailingStep" class="org.inanme.springbatch.Job5.ConstantlyFailingStep"/>
 
     <bean id="job5.reader" class="org.inanme.springbatch.Job5.Reader" scope="step"
@@ -108,8 +108,8 @@
     <bean id="job8.reader" class="org.springframework.batch.item.database.JdbcPagingItemReader"
           p:dataSource-ref="dataSource" p:pageSize="${job8.commit-interval}" abstract="true"/>
 
-    <bean id="data.migrator.userRowMapper" class="org.inanme.springbatch.UserRowMapper"/>
-    <bean id="data.migrator.groupRowMapper" class="org.inanme.springbatch.GroupRowMapper"/>
+    <bean id="data.migrator.userRowMapper" class="org.inanme.springbatch.Job8Support$UserRowMapper"/>
+    <bean id="data.migrator.groupRowMapper" class="org.inanme.springbatch.Job8Support$GroupRowMapper"/>
     <bean id="data.migrator.ugrap.queryProvider"
           class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean"
           p:dataSource-ref="dataSource" abstract="true"/>
