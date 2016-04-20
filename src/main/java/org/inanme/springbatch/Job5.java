@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Configuration
-@Import(ProcessingResources.class)
+@Import({ProcessingResources.class, Job8Support.class})
 @ImportResource("/job5.xml")
 @EnableJpaRepositories(transactionManagerRef = "jtaTransactionManager", considerNestedRepositories = true)
 @EnableTransactionManagement

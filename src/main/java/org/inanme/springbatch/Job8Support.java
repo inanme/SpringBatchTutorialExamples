@@ -6,6 +6,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.Entity;
@@ -40,6 +41,7 @@ public class Job8Support {
         }
     }
 
+    @Component("groupRowMapper")
     public static class GroupRowMapper implements RowMapper<Group1> {
 
         @Override
@@ -84,6 +86,7 @@ public class Job8Support {
         }
     }
 
+    @Component("userRowMapper")
     public static class UserRowMapper implements RowMapper<User> {
 
         @Override

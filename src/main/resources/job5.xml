@@ -108,14 +108,12 @@
     <bean id="job8.reader" class="org.springframework.batch.item.database.JdbcPagingItemReader"
           p:dataSource-ref="dataSource" p:pageSize="${job8.commit-interval}" abstract="true"/>
 
-    <bean id="data.migrator.userRowMapper" class="org.inanme.springbatch.Job8Support$UserRowMapper"/>
-    <bean id="data.migrator.groupRowMapper" class="org.inanme.springbatch.Job8Support$GroupRowMapper"/>
     <bean id="data.migrator.ugrap.queryProvider"
           class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean"
           p:dataSource-ref="dataSource" abstract="true"/>
 
     <bean id="job8.user.reader" parent="job8.reader" scope="step">
-        <property name="rowMapper" ref="data.migrator.userRowMapper"/>
+        <property name="rowMapper" ref="userRowMapper"/>
         <property name="queryProvider">
             <bean parent="data.migrator.ugrap.queryProvider"
                   p:selectClause="select id, name"
@@ -130,7 +128,7 @@
     </bean>
 
     <bean id="job8.group.reader" parent="job8.reader" scope="step">
-        <property name="rowMapper" ref="data.migrator.groupRowMapper"/>
+        <property name="rowMapper" ref="groupRowMapper"/>
         <property name="queryProvider">
             <bean parent="data.migrator.ugrap.queryProvider"
                   p:selectClause="select id, name"
