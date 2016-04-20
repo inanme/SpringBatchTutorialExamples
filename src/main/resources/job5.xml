@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:batch="http://www.springframework.org/schema/batch"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:p="http://www.springframework.org/schema/p"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <import resource="bitronix.xml"/>
     <import resource="job-core.xml"/>
@@ -25,6 +31,7 @@
     <bean id="persistEntity" class="org.inanme.springbatch.Job5$PersistEntity"
           c:customPojoRepository-ref="customPojoRepository"/>
     <bean id="errorProneStep" class="org.inanme.springbatch.Job5.ErrorProneStep"/>
+    <bean id="errorProneProcessor" class="org.inanme.springbatch.Job5.ErrorProneProcessor" scope="step"/>
     <bean id="constantlyFailingStep" class="org.inanme.springbatch.Job5.ConstantlyFailingStep"/>
 
     <bean id="job5.reader" class="org.inanme.springbatch.Job5.Reader" scope="step"
@@ -89,6 +96,76 @@
         <batch:step id="job7.step1">
             <batch:tasklet ref="constantlyFailingStep" start-limit="3"
                            transaction-manager="transactionManager"/>
+        </batch:step>
+
+    </batch:job>
+
+    <util:properties id="job8Properties">
+        <prop key="job8.commit-interval">2</prop>
+    </util:properties>
+    <context:property-placeholder properties-ref="job8Properties"/>
+
+    <bean id="job8.reader" class="org.springframework.batch.item.database.JdbcPagingItemReader"
+          p:dataSource-ref="dataSource" p:pageSize="${job8.commit-interval}" abstract="true"/>
+
+    <bean id="data.migrator.userRowMapper" class="org.inanme.springbatch.UserRowMapper"/>
+    <bean id="data.migrator.groupRowMapper" class="org.inanme.springbatch.GroupRowMapper"/>
+    <bean id="data.migrator.ugrap.queryProvider"
+          class="org.springframework.batch.item.database.support.SqlPagingQueryProviderFactoryBean"
+          p:dataSource-ref="dataSource" abstract="true"/>
+
+    <bean id="job8.user.reader" parent="job8.reader" scope="step">
+        <property name="rowMapper" ref="data.migrator.userRowMapper"/>
+        <property name="queryProvider">
+            <bean parent="data.migrator.ugrap.queryProvider"
+                  p:selectClause="select id, name"
+                  p:fromClause="FROM source_user">
+                <property name="sortKeys">
+                    <map>
+                        <entry key="id" value="ASCENDING"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="job8.group.reader" parent="job8.reader" scope="step">
+        <property name="rowMapper" ref="data.migrator.groupRowMapper"/>
+        <property name="queryProvider">
+            <bean parent="data.migrator.ugrap.queryProvider"
+                  p:selectClause="select id, name"
+                  p:fromClause="FROM source_group">
+                <property name="sortKeys">
+                    <map>
+                        <entry key="id" value="ASCENDING"/>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="job8.user.writer" class="org.springframework.batch.item.data.RepositoryItemWriter"
+          p:repository-ref="userRepository" p:methodName="save"/>
+
+    <bean id="job8.group.writer" class="org.springframework.batch.item.data.RepositoryItemWriter"
+          p:repository-ref="groupRepository" p:methodName="save"/>
+
+    <batch:job id="job8" job-repository="simpleJobRepository">
+
+        <batch:step id="job8.migrate.users" next="job8.migrate.groups">
+            <batch:tasklet transaction-manager="transactionManager">
+                <batch:chunk reader="job8.user.reader" writer="job8.user.writer"
+                             commit-interval="${job8.commit-interval}">
+                </batch:chunk>
+            </batch:tasklet>
+        </batch:step>
+
+        <batch:step id="job8.migrate.groups">
+            <batch:tasklet transaction-manager="transactionManager">
+                <batch:chunk reader="job8.group.reader" processor="errorProneProcessor" writer="job8.group.writer"
+                             commit-interval="${job8.commit-interval}">
+                </batch:chunk>
+            </batch:tasklet>
         </batch:step>
 
     </batch:job>

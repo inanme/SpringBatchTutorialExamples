@@ -30,7 +30,7 @@ public class Job5Test {
     public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
     @Autowired
-    Job job5, job6, job7;
+    Job job5, job6, job7, job8;
 
     @Autowired
     JobLauncher jobLauncher;
@@ -99,5 +99,14 @@ public class Job5Test {
 
         JobExecution jobExecution4 = jobLauncher.run(job7, jobParameters1);
         assertEquals(BatchStatus.FAILED, jobExecution4.getStatus());
+    }
+
+    @Test
+    public void job8Test() throws Exception {
+        JobParameters jobParameters = new JobParametersBuilder().addLong("id", 1l).toJobParameters();
+        JobExecution failedExecution = jobLauncher.run(job8, jobParameters);
+        assertEquals(BatchStatus.FAILED, failedExecution.getStatus());
+        JobExecution successfulExecution = jobLauncher.run(job8, jobParameters);
+        assertEquals(BatchStatus.COMPLETED, successfulExecution.getStatus());
     }
 }

@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
+            <artifactId>activemq-broker</artifactId>
             <version>5.13.2</version>
         </dependency>
         <dependency>

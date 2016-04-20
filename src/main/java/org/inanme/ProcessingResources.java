@@ -43,11 +43,16 @@ public class ProcessingResources {
 
     public static final String H2_BATCH_SCHEMA_DROP_SQL = "classpath:org/springframework/batch/core/schema-drop-h2.sql";
 
+    public static final String H2_DATA_SCRIPT_SQL = "classpath:test-data.sql";
+
     @Value(H2_BATCH_SCHEMA_CREATE_SQL)
     public Resource H2_BATCH_SCHEMA_CREATE_RESOURCE;
 
     @Value(H2_BATCH_SCHEMA_DROP_SQL)
     public Resource H2_BATCH_SCHEMA_DROP_RESOURCE;
+
+    @Value(H2_DATA_SCRIPT_SQL)
+    public Resource H2_DATA_SCRIPT_RESOURCE;
 
     @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource, DatabasePopulator databasePopulator) {
@@ -63,7 +68,7 @@ public class ProcessingResources {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(H2_BATCH_SCHEMA_DROP_RESOURCE);
         populator.addScript(H2_BATCH_SCHEMA_CREATE_RESOURCE);
-        //populator.addScript(H2_DATA_SCRIPT);
+        populator.addScript(H2_DATA_SCRIPT_RESOURCE);
         return populator;
     }
 
@@ -88,7 +93,7 @@ public class ProcessingResources {
         //factory.setDataSource(dataSource);
         factory.setJtaDataSource(dataSource);
         factory.setPersistenceUnitName("sample");
-        factory.setPackagesToScan("org.inanme.springdata.domain");
+        factory.setPackagesToScan("org.inanme");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(true);

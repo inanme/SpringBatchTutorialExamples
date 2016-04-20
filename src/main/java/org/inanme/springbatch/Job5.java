@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ExecutionContext;
@@ -17,6 +18,7 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
@@ -107,6 +109,27 @@ public class Job5 {
                 throw new IllegalStateException("Failing on purpose");
             }
             return RepeatStatus.FINISHED;
+        }
+    }
+
+    public static class ErrorProneProcessor implements ItemProcessor<Group1, Group1> {
+
+        private static final String KEY = "failedBefore";
+
+        @Value("#{stepExecution}")
+        private StepExecution stepExecution;
+
+        @Override
+        public Group1 process(Group1 item) throws Exception {
+            ExecutionContext executionContext = stepExecution.getJobExecution().getExecutionContext();
+            Boolean failedBefore = (Boolean) executionContext.get(KEY);
+            if (item.getId().equals("4")) {
+                if (!Boolean.TRUE.equals(failedBefore)) {
+                    executionContext.put(KEY, true);
+                    throw new IllegalStateException("Failing on purpose");
+                }
+            }
+            return item;
         }
     }
 
