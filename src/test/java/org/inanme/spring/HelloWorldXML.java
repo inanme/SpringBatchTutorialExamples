@@ -1,6 +1,5 @@
 package org.inanme.spring;
 
-
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-//@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/app-config.xml", "/mock-client.xml"})
 public class HelloWorldXML {
 
@@ -25,8 +23,17 @@ public class HelloWorldXML {
     @Autowired
     private SomeService someService;
 
+    @Autowired
+    private WebClient webClient;
+
     @Test
-    public void test() {
+    public void testOverride() {
         assertThat(someService.callService(), is(1));
+    }
+
+    @Test
+    public void testFactories() {
+        WebClient local = new WebClient("val1", "val2");
+        assertThat(webClient.toString(), is(local.toString()));
     }
 }
