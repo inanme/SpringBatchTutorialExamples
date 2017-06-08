@@ -4,5 +4,7 @@
        xmlns:c="http://www.springframework.org/schema/c"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="intSupplier" class="org.inanme.spring.ConstantIntSupplier" c:value="#{T(Integer).MAX_VALUE}"/>
+    <bean id="intSupplier" class="com.google.common.base.Suppliers" factory-method="ofInstance"
+          c:_0="#{T(Integer).MAX_VALUE}"/>
+
 </beans>

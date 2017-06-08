@@ -13,7 +13,6 @@ import org.springframework.orm.jpa.support.SharedEntityManagerBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
@@ -37,7 +36,6 @@ public class ProcessingResources {
         taskExecutor.setThreadGroupName("Single Threads");
         return taskExecutor;
     }
-
 
     public static final String H2_BATCH_SCHEMA_CREATE_SQL = "classpath:org/springframework/batch/core/schema-h2.sql";
 

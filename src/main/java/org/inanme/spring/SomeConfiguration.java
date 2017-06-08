@@ -1,27 +1,27 @@
 package org.inanme.spring;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.function.IntSupplier;
 
 @Configuration
 public class SomeConfiguration {
 
     @Bean
-    public IntSupplier int10() {
-        return new ConstantIntSupplier(10);
+    public Supplier<Integer> int10() {
+        return Suppliers.ofInstance(10);
     }
 
     @Bean
-    public IntSupplier int11() {
-        return new ConstantIntSupplier(11);
+    public Supplier<Integer> int11() {
+        return Suppliers.ofInstance(11);
     }
 
     @Bean
     @Autowired
-    public SomeService someService(IntSupplier int10) {
+    public SomeService someService(Supplier<Integer> int10) {
         return new SomeService(int10);
     }
 }

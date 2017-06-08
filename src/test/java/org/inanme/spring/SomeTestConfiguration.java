@@ -1,15 +1,15 @@
 package org.inanme.spring;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.function.IntSupplier;
 
 @Configuration
 public class SomeTestConfiguration {
 
     @Bean
-    public IntSupplier int10() {
-        return new ConstantIntSupplier(Integer.MAX_VALUE);
+    public Supplier<Integer> int10() {
+        return Suppliers.ofInstance(Integer.MAX_VALUE);
     }
 }

@@ -1,7 +1,6 @@
 package org.inanme.springbatch;
 
 import org.inanme.ProcessingResources;
-import org.inanme.spring.ConstantStringSupplier;
 import org.inanme.springdata.domain.CustomPojo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +25,14 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -65,7 +70,7 @@ public class Job5 {
 
         private final String message;
 
-        public ExecutionContextLoader(ConstantStringSupplier stringSupplier) {
+        public ExecutionContextLoader(Supplier<String> stringSupplier) {
             this.message = stringSupplier.get();
         }
 
@@ -100,7 +105,7 @@ public class Job5 {
         public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
             String stepName = chunkContext.getStepContext().getStepName();
             ExecutionContext executionContext =
-                chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
+                    chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
             Boolean failedBefore = (Boolean) executionContext.get(KEY);
             if (!Boolean.TRUE.equals(failedBefore)) {
                 executionContext.put(KEY, true);

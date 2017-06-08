@@ -1,6 +1,5 @@
 package org.inanme.spring;
 
-
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,12 +9,12 @@ import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 @ContextConfiguration(
-    classes = {SomeConfiguration.class, SomeTestConfiguration.class},
-    loader = AnnotationConfigContextLoader.class)
+        classes = {SomeConfiguration.class, SomeTestConfiguration.class},
+        loader = AnnotationConfigContextLoader.class)
 public class HelloWorldAnno {
 
     @ClassRule

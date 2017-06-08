@@ -20,12 +20,12 @@
           c:cache-ref="errorCache"/>
     <bean id="contextLoader1" class="org.inanme.springbatch.Job5.ExecutionContextLoader" scope="step">
         <constructor-arg>
-            <bean class="org.inanme.spring.ConstantStringSupplier" c:value="Message 1"/>
+            <bean class="com.google.common.base.Suppliers" factory-method="ofInstance" c:_0="Message 1"/>
         </constructor-arg>
     </bean>
     <bean id="contextLoader2" class="org.inanme.springbatch.Job5.ExecutionContextLoader" scope="step">
         <constructor-arg>
-            <bean class="org.inanme.spring.ConstantStringSupplier" c:value="Message 2"/>
+            <bean class="com.google.common.base.Suppliers" factory-method="ofInstance" c:_0="Message 2"/>
         </constructor-arg>
     </bean>
     <bean id="persistEntity" class="org.inanme.springbatch.Job5$PersistEntity"
